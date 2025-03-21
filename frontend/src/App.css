@@ -52,6 +52,7 @@ h1 {
   font-size: 2.5rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding-top: 1vh;
 }
 
 /* Content Layout */
@@ -141,14 +142,6 @@ textarea:focus {
 
 .input-actions, .output-actions {
   justify-content: flex-end;
-}
-
-.summary-container {
-  padding: 1rem;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  position: relative;
 }
 
 .summary-text {
@@ -246,6 +239,7 @@ button {
   background-color: rgba(94, 130, 246, 0.1);
   color: var(--secondary-color);
   border: 1px solid var(--border-color);
+  margin-top: 0.25rem;
 }
 
 .secondary-button:hover {
