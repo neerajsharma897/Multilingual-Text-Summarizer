@@ -1,119 +1,261 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState, useEffect } from 'react'
+import './App.css'
 
 function App() {
-  const [text, setText] = useState("");
-  const [language, setLanguage] = useState("en");
-  const [summary, setSummary] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [sentences, setSentences] = useState(3);
+  const [text, setText] = useState('')
+  const [summary, setSummary] = useState('')
+  const [language, setLanguage] = useState('en')
+  const [sentences, setSentences] = useState(3)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [stats, setStats] = useState({ chars: 0, words: 0, sentences: 0 })
+  const [copied, setCopied] = useState(false)
+  const [maxSentences, setMaxSentences] = useState(10)
+
+  const sampleText = `The Amazon rainforest, often referred to as the "lungs of the Earth," produces approximately 20% of the world's oxygen. Spanning over 5.5 million square kilometers across nine countries, it is the largest tropical rainforest on the planet. The Amazon is home to an incredibly diverse range of species, many of which are found nowhere else. However, deforestation poses a significant threat to this vital ecosystem. Logging, agriculture, and infrastructure development contribute to the loss of millions of hectares of forest each year. Efforts to combat deforestation include sustainable land management, protected reserves, and indigenous leadership in conservation initiatives. Protecting the Amazon is not only crucial for biodiversity but also for maintaining the planet's climate balance.`
+
+  useEffect(() => {
+    // Count words and characters
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0
+    const chars = text.length
+    
+    // Count sentences
+    const sentenceCount = text.trim() ? text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0).length : 0
+    
+    // Update max sentences
+    const newMaxSentences = Math.max(1, sentenceCount)
+    setMaxSentences(newMaxSentences)
+    
+    // Make sure current sentence selection doesn't exceed the max
+    if (sentences > newMaxSentences && newMaxSentences > 0) {
+      setSentences(newMaxSentences)
+    }
+    
+    setStats({ chars, words, sentences: sentenceCount })
+  }, [text])
 
   const handleSummarize = async () => {
     if (!text.trim()) {
-      setError("Please enter some text to summarize");
-      return;
+      setError('Please enter some text to summarize')
+      return
     }
 
-    setLoading(true);
-    setError("");
-    setSummary("");
+    if (stats.sentences < 2) {
+      setError('Please provide at least 2 sentences to generate a summary')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    setSummary('')
+    setCopied(false)
 
     try {
-      console.log("Sending request:", { text, language, sentences });
-      const response = await axios.post("http://localhost:5000/summarize", {
-        text,
-        language,
-        sentences,
-      });
-      console.log("Response:", response.data);
+      const response = await fetch('http://127.0.0.1:5000/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text.trim(),
+          language,
+          sentences: parseInt(sentences)
+        }),
+        timeout: 15000
+      })
 
-      if (response.data.status === "success") {
-        setSummary(response.data.summary);
-      } else {
-        throw new Error(response.data.error);
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate summary')
       }
-    } catch (error) {
-      console.error("Full error:", error);
-      setError(error.response?.data?.error || "Failed to generate summary");
+
+      const data = await response.json()
+      setSummary(data.summary)
+    } catch (err) {
+      console.error('Error:', err)
+      if (err.name === 'AbortError' || err.message.includes('timeout')) {
+        setError('Request timed out. The server took too long to respond.')
+      } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        setError('Network error. Please check your connection and ensure the server is running.')
+      } else {
+        setError(err.message || 'Failed to generate summary')
+      }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      handleSummarize()
+    }
+  }
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(summary)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+    }
+  }
+
+  const handleClear = () => {
+    setText('')
+    setSummary('')
+    setError(null)
+    setCopied(false)
+  }
+
+  const handleUseSample = () => {
+    setText(sampleText)
+    setSummary('')
+    setError(null)
+    setCopied(false)
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto p-5">
-        <h1 className="text-4xl font-bold text-center mb-10">
-          Multilingual Text Summarizer
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-          <div className="flex flex-col h-[250px] md:h-[400px]">
-            <h2 className="text-xl font-semibold mb-4">Input Text</h2>
-            <div className="flex-1 bg-[#1a1a1a] rounded-lg overflow-hidden">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Enter text to summarize..."
-                className="w-full h-full p-4 bg-transparent border-none text-white text-base resize-none focus:outline-none"
-              />
-            </div>
+    <div className="container">
+      <h1>Multilingual Text Summarizer</h1>
+      
+      <div className="content-wrapper">
+        <div className="input-section">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 7L7 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17 7L17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Input Text
+          </h2>
+          <div className="text-area">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Enter text to summarize..."
+              aria-label="Text to summarize"
+            ></textarea>
           </div>
-
-          <div className="flex flex-col h-[250px] md:h-[400px]">
-            <h2 className="text-xl font-semibold mb-4">Output</h2>
-            <div className="flex-1 bg-[#172e45] rounded-lg p-4 overflow-y-auto">
-              {summary && (
-                <>
-                  <h3 className="text-lg font-medium mb-2">
-                    {language === "hi" ? "सारांश:" : 
-                     language === "mr" ? "सारांश:" : 
-                     "Summary:"}
-                  </h3>
-                  <div className="text-white leading-relaxed">{summary}</div>
-                </>
-              )}
-            </div>
+          <div className="text-stats">
+            <span>{stats.chars} characters</span>
+            <span>{stats.words} words</span>
+            <span>{stats.sentences} sentences</span>
+          </div>
+          <div className="input-actions">
+            <button onClick={handleClear} className="secondary-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Clear
+            </button>
+            <button onClick={handleUseSample} className="secondary-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12H15M9 16H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L18.7071 8.70711C18.8946 8.89464 19 9.149 19 9.41421V19C19 20.1046 18.1046 21 17 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Sample Text
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 items-center justify-center mt-5">
-          <select
-            value={language}
+        <div className="output-section">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 9H15M9 13H15M9 17H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Summary
+          </h2>
+          <div className="summary-container">
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Generating summary...</p>
+              </div>
+            ) : summary ? (
+              <div className="summary-text">{summary}</div>
+            ) : (
+              <div className="placeholder-text">
+                Your summary will appear here
+              </div>
+            )}
+          </div>
+          <div className="output-actions">
+            {summary && (
+              <button onClick={handleCopy} className="secondary-button">
+                {copied ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H16C17.1046 21 18 20.1046 18 19V17M8 5C8 6.10457 8.89543 7 10 7H12C13.1046 7 14 6.10457 14 5M8 5C8 3.89543 8.89543 3 10 3H12C13.1046 3 14 3.89543 14 5M14 5H16C17.1046 5 18 5.89543 18 7V10M20 14V16.5L22 14.5M20 14V11.5L18 13.5M20 14H17.5M20 14H22.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Copy to Clipboard
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="controls">
+        <div className="control-group language-control">
+          <label htmlFor="language-select">Language:</label>
+          <select 
+            id="language-select"
+            value={language} 
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-[100px] sm:w-auto px-3 py-2 border border-[#333] rounded bg-[#1a1a1a] text-white"
+            aria-label="Select output language"
           >
             <option value="en">English</option>
             <option value="hi">Hindi</option>
             <option value="mr">Marathi</option>
           </select>
-
-          <div className="flex items-center gap-2">
-            <label className="text-white whitespace-nowrap">Number of Sentences:</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={sentences}
-              onChange={(e) => setSentences(Number(e.target.value))}
-              className="w-16 px-3 py-2 border border-[#333] rounded bg-[#1a1a1a] text-white"
-            />
-          </div>
-
-          <button
-            onClick={handleSummarize}
-            disabled={loading || !text.trim()}
-            className="px-4 py-2 bg-[#0066cc] rounded text-white disabled:bg-[#333] disabled:cursor-not-allowed"
-          >
-            {loading ? "Summarizing..." : "Summarize"}
-          </button>
         </div>
 
-        {error && <div className="text-[#ff4444] text-center mt-4">{error}</div>}
+        <div className="control-group sentence-control">
+          <label htmlFor="sentences-input">Sentences:</label>
+          <input
+            id="sentences-input"
+            type="number"
+            min="1"
+            max={maxSentences}
+            value={sentences}
+            onChange={(e) => setSentences(Math.max(1, Math.min(maxSentences, parseInt(e.target.value) || 1)))}
+            aria-label={`Number of sentences in summary (max ${maxSentences})`}
+          />
+          <span className="input-help">(max: {maxSentences})</span>
+        </div>
+
+        <button 
+          onClick={handleSummarize} 
+          disabled={loading || !text.trim() || stats.sentences < 2}
+          className="primary-button"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 10V3L4 14H11V21L20 10H13Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {loading ? 'Summarizing...' : 'Summarize'}
+        </button>
       </div>
+
+      {error && (
+        <div className="error">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
