@@ -4,7 +4,7 @@ import './App.css'
 function App() {
   const [text, setText] = useState('')
   const [summary, setSummary] = useState('')
-  const [language, setLanguage] = useState('en')
+  const [language, setLanguage] = useState('mr')
   const [sentences, setSentences] = useState(3)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
