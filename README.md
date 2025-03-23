@@ -41,8 +41,8 @@ The Multilingual Text Summarizer is a web application that extracts key points f
 ```
 ### **2. Setup Frontend**
 ```bash
-cd frontend\react
-npm install
-npm run dev
+    cd frontend\react
+    npm install
+    npm run dev
 ```
 ---
