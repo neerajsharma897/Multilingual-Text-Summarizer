@@ -6,26 +6,30 @@ The Multilingual Text Summarizer is a web application that extracts key points f
 ##  **Tech Stack**
 
 ### **Frontend:**
-- **React** – Component-based UI
-- **Tailwind CSS** – Styling framework
-- **Vite** – Fast build tool
-- **Axios** – API requests
+- **React** – Component-based UI with hooks for state management
+- **Tailwind CSS** – Utility-first CSS framework with dark mode support
+- **Vite** – Next-generation frontend tooling (ESBuild powered)
+- **Axios** – Promise-based HTTP client with interceptors
 
 ### **Backend:**
-- **Flask** – Web framework
+- **Flask** – Micro web framework with REST API endpoints
 - **NLTK** – Natural language processing
-- **googletrans** – Translation support
-- **flask-cors** – CORS handling
+- **googletrans** – Free Google Translate API for multilingual support
+- **flask-cors** – Secure cross-origin resource sharing middleware
+- **scikit-learn** - TF-IDF vectorization for extractive summarization
+- **numpy** - Efficient numerical operations for scoring algorithms
 
 
 ## **Features**
-- Extractive text summarization
+- Extractive text summarization using TF-IDF with positional bias scoring
 - Multi-language support (English, Hindi, Marathi)
 - Adjustable summary length
-- Responsive and dark-themed UI
+- Responsive and dark-themed UI with Tailwind CSS
 - API-based communication between frontend and backend
-
----
+- Sentence scoring algorithm combining:
+    - Term frequency-inverse document frequency (TF-IDF)
+    - Positional weighting (boost first/last sentences)
+    - Length normalization (square root scaling)
 
 
 
@@ -45,4 +49,3 @@ cd frontend\react
 npm install
 npm run dev
 ```
----
