@@ -59,7 +59,13 @@ def extractive_summary(text: str, sentences_count: int = 3) -> str:
 def translate_text(text: str, target_lang: str) -> str:
     try:
         translator = Translator()
-        return translator.translate(text, dest=target_lang).text
+        max_retries = 3
+        for _ in range(max_retries):
+            try:
+                return translator.translate(text, dest=target_lang).text
+            except Exception:
+                continue
+        raise Exception("Translation fialed after maximum retries")
     except Exception as e:
         raise Exception(f"Translation error: {str(e)}")
 
@@ -69,12 +75,12 @@ def summarize():
         data = request.json
         text = data.get("text", "").strip()
         lang = data.get("language", "en")
-        sentences = min(int(data.get("sentences", 3)), 10)  # Cap at 10 sentences
+        sentences_count = data.get("sentences", 3)
         
         if not text:
             return jsonify({"error": "No text provided"}), 400
 
-        summary = extractive_summary(text, sentences)
+        summary = extractive_summary(text, sentences_count)
         if lang != "en":
             summary = translate_text(summary, lang)
 
@@ -82,6 +88,7 @@ def summarize():
             "summary": summary,
             "status": "success"
         })
+    
     except Exception as e:
         return jsonify({
             "error": str(e),
