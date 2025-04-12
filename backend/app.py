@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from googletrans import Translator
 import nltk
@@ -20,30 +21,37 @@ def extractive_summary(text: str, sentences_count: int = 3) -> str:
             return text
             
         # 1. TF-IDF Transformation
-        vectorizer = TfidfVectorizer(stop_words='english', tokenizer=word_tokenize, token_pattern=None)
+        vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1,3), tokenizer=word_tokenize, token_pattern=None)
         tfidf_matrix = vectorizer.fit_transform(sentences)
+
+        # 2. Compute document vector (mean of all sentence vectors)
+        doc_vector = np.asarray(tfidf_matrix.mean(axis=0)).reshape(1, -1)
         
-        # 2. Calculate word importance (sum of TF-IDF scores across document)
-        word_scores = np.asarray(tfidf_matrix.sum(axis=0)).flatten()
+        # 3. Calculate word importance (sum of TF-IDF scores across document)
+        word_scores = tfidf_matrix.sum(axis=0).A1
         vocab = vectorizer.get_feature_names_out()
         word_weights = dict(zip(vocab, word_scores))
         
-        # 3. Score sentences with positional bias
+        # 4. Score sentences with positional bias
         sent_scores = []
         for i, sentence in enumerate(sentences):
             # TF-IDF component
             words = word_tokenize(sentence.lower())
             content_score = sum(word_weights.get(word, 0) for word in words)
             
+            # Cosine similarity to document
+            sentence_vec = tfidf_matrix[i]
+            similarity_score = cosine_similarity(sentence_vec, doc_vector).flatten()[0]
+
             # Positional bias (U-shaped: boost start/end sentences)
             pos = i / len(sentences)
             pos_weight = 0.5 + max(pos, 1 - pos)  # Ranges 0.5-1.5
             
             # Normalized score
-            score = (content_score / len(words)**0.5) * pos_weight
+            score = (content_score / len(words)**0.5) * pos_weight + similarity_score
             sent_scores.append((score, i))
         
-        # 4. Pythonic sentence selection (optimized version)
+        # 5. Top sentence selection 
         selected_indices = sorted(
             range(len(sentences)),
             key=lambda i: sent_scores[i],
