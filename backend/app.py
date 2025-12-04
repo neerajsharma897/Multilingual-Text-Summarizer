@@ -77,6 +77,10 @@ def translate_text(text: str, target_lang: str) -> str:
     except Exception as e:
         raise Exception(f"Translation error: {str(e)}")
 
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"status": "online", "message": "Multilingual Summarizer Backend is running"})
+
 @app.route('/summarize', methods=['POST'])
 def summarize():
     try:
