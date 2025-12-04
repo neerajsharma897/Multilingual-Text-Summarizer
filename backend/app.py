@@ -6,10 +6,23 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from googletrans import Translator
 import nltk
+import os
 
 # Download required NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
+# Define a local path for NLTK data to avoid permission issues on Render
+nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
+if not os.path.exists(nltk_data_path):
+    os.makedirs(nltk_data_path)
+
+nltk.data.path.append(nltk_data_path)
+
+# Download resources to the specified directory
+try:
+    nltk.download('punkt', download_dir=nltk_data_path)
+    nltk.download('punkt_tab', download_dir=nltk_data_path)
+    nltk.download('stopwords', download_dir=nltk_data_path)
+except Exception as e:
+    print(f"Error downloading NLTK data: {e}")
 
 app = Flask(__name__)
 CORS(app)
@@ -76,6 +89,10 @@ def translate_text(text: str, target_lang: str) -> str:
         raise Exception("Translation fialed after maximum retries")
     except Exception as e:
         raise Exception(f"Translation error: {str(e)}")
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"status": "online", "message": "Multilingual Summarizer Backend is running"})
 
 @app.route('/summarize', methods=['POST'])
 def summarize():

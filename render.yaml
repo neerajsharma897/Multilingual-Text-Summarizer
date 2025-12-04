@@ -1,0 +1,23 @@
+services:
+  # Backend Service
+  - type: web
+    name: multilingual-summarizer-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd backend && pip install -r requirements.txt && python -m nltk.downloader punkt punkt_tab stopwords
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+
+  # Frontend Service
+  - type: web
+    name: multilingual-summarizer-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://multilingual-summarizer-backend.onrender.com/summarize
+        # Note: You will need to update this value with your actual backend URL after the first deployment if the name is different.
