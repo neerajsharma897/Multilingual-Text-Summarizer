@@ -32,7 +32,7 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   overflow: hidden;
 }
 
@@ -66,7 +66,8 @@ h1 {
   padding: 0.5rem;
 }
 
-.input-section, .output-section {
+.input-section,
+.output-section {
   display: flex;
   flex-direction: column;
   background: var(--card-background);
@@ -79,7 +80,8 @@ h1 {
   overflow: hidden;
 }
 
-.input-section:hover, .output-section:hover {
+.input-section:hover,
+.output-section:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   border-color: var(--secondary-color);
 }
@@ -98,7 +100,8 @@ h2 svg {
   color: var(--secondary-color);
 }
 
-.text-area, .summary-container {
+.text-area,
+.summary-container {
   flex: 1;
   background-color: var(--background-color);
   border-radius: 0.75rem;
@@ -107,7 +110,8 @@ h2 svg {
   transition: border-color var(--animation-duration) ease;
 }
 
-.text-area:focus-within, .summary-container:focus-within {
+.text-area:focus-within,
+.summary-container:focus-within {
   border-color: var(--primary-color);
 }
 
@@ -129,7 +133,9 @@ textarea:focus {
   outline: none;
 }
 
-.text-stats, .input-actions, .output-actions {
+.text-stats,
+.input-actions,
+.output-actions {
   display: flex;
   gap: 1rem;
   margin-top: 0.5vh;
@@ -141,7 +147,8 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
-.input-actions, .output-actions {
+.input-actions,
+.output-actions {
   justify-content: flex-end;
 }
 
@@ -188,8 +195,9 @@ label {
   font-weight: 500;
 }
 
-select, input {
-  padding: 0.75rem 1rem;
+select,
+input {
+  padding: 0.5rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: 0.75rem;
   background-color: var(--background-color);
@@ -199,15 +207,105 @@ select, input {
   min-width: 120px;
 }
 
-select:focus, input:focus {
+/* Modern dropdown styling with custom arrow */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--primary-color);
+}
+
+select:focus,
+input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-input[type=number] {
+/* Dropdown options with rounded corners */
+select option {
+  background-color: var(--card-background);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+/* Hide default number input spinners */
+input[type="number"] {
   min-width: 80px;
   text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Custom number input wrapper with buttons inside */
+.number-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.number-input-wrapper input[type="number"] {
+  padding-right: 2rem;
+  padding-left: 0.5rem;
+}
+
+.number-spinner-btn {
+  position: absolute;
+  right: 2px;
+  width: 24px;
+  height: calc(50% - 2px);
+  min-width: 24px;
+  padding: 0;
+  background-color: #0f172a;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--animation-duration) ease;
+}
+
+.number-spinner-btn:first-of-type {
+  top: 2px;
+  border-radius: 0 0.5rem 0 0;
+}
+
+.number-spinner-btn:last-of-type {
+  bottom: 2px;
+  border-radius: 0 0 0.5rem 0;
+}
+
+.number-spinner-btn:hover:not(:disabled) {
+  background-color: #1e293b;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.number-spinner-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background-color: var(--background-color);
+}
+
+.number-spinner-btn svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* Buttons */
@@ -216,7 +314,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.75rem;
   font-size: 1rem;
@@ -279,8 +377,12 @@ button svg {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error Display */
@@ -337,16 +439,17 @@ kbd {
   .content-wrapper {
     grid-template-columns: 1fr;
   }
-  
-  .input-section, .output-section {
+
+  .input-section,
+  .output-section {
     height: 26rem;
   }
-  
+
   .container {
     height: auto;
     overflow-y: auto;
   }
-  
+
   body {
     overflow-y: auto;
   }
@@ -358,35 +461,121 @@ kbd {
   }
 
   h1 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .content-wrapper {
+    gap: 1rem;
+    padding: 0;
+  }
+
+  .input-section,
+  .output-section {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  textarea {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .text-stats {
+    font-size: 0.8rem;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+
+  .text-stats span {
+    white-space: nowrap;
   }
 
   .controls {
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.75rem;
   }
 
   .control-group {
     width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  select, input {
+  .control-group label {
+    margin-bottom: 0.25rem;
+    align-self: flex-start;
+  }
+
+  select,
+  input {
+    width: 100%;
     flex: 1;
+  }
+
+  .number-input-wrapper {
+    width: 100%;
+    align-self: flex-start;
+  }
+
+  .input-help {
+    align-self: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .number-input-wrapper input[type="number"] {
+    width: 100%;
   }
 
   button {
     width: 100%;
   }
-  
-  .text-stats, .input-actions, .output-actions {
+
+  .primary-button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .text-stats,
+  .input-actions,
+  .output-actions {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
-  .input-actions button, .output-actions button {
+
+  .input-actions button,
+  .output-actions button {
     width: 100%;
+  }
+
+  .secondary-button {
+    padding: 0.5rem 1rem;
+  }
+
+  .input-help {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+
+  .summary-text {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  .placeholder-text {
+    font-size: 0.9rem;
+  }
+
+  .error {
+    padding: 0.75rem;
+    font-size: 0.9rem;
   }
 }
 
