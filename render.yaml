@@ -11,7 +11,7 @@ services:
         value: 3.9.0
 
   # Frontend Service
-  - type: static
+  - type: web
     name: multilingual-summarizer-frontend
     env: static
     region: oregon
