@@ -5,7 +5,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: cd backend && pip install -r requirements.txt && python -m nltk.downloader punkt stopwords
+    buildCommand: cd backend && pip install -r requirements.txt && python -m nltk.downloader punkt punkt_tab stopwords
     startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
