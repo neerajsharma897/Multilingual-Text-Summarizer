@@ -4,6 +4,7 @@ services:
     name: multilingual-summarizer-backend
     env: python
     region: oregon
+    plan: free
     buildCommand: cd backend && pip install -r requirements.txt && python -m nltk.downloader punkt stopwords
     startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
@@ -14,6 +15,7 @@ services:
   - type: web
     name: multilingual-summarizer-frontend
     env: static
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
