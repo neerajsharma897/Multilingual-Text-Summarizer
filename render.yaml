@@ -15,7 +15,6 @@ services:
   - type: web
     name: multilingual-summarizer-frontend
     env: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
